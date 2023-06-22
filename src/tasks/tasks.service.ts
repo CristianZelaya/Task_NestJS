@@ -46,17 +46,26 @@ export class TasksService {
 
         const task = this.tasks.find( task => task.id === id && task.status === true )
 
-        let response = {}
+        let response = {
+            msg: "",
+            task: {},
+            cod: 400
+        }
 
         if ( task ){
 
-            response = task
+            response = {
+                msg: `Se encontro la tarea con el id ${id}`,
+                task,
+                cod: 200
+            }
             
         } else {
 
             response = {
                 msg: `No hay tareas con el id ${id}`,
-                task
+                task: {},
+                cod: 400
             }
 
         }
@@ -92,9 +101,9 @@ export class TasksService {
         const task = this.getTaskById(id)
         let response = {}
 
-        if ( task ) {
+        if ( task && task.cod == 200 ) {
 
-            const update = Object.assign(task, updateFields)
+            const update = Object.assign(task.task, updateFields)
             this.tasks = this.tasks.map((task) => (task.id === id ? update : task) as Task )
 
             response = {
