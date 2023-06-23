@@ -33,8 +33,6 @@ export class TasksController {
     @Patch(':id')
     deleteTask(@Param('id') id:string){
 
-        console.log(id);
-
         return this.tasksService.deleteTask( id )
 
     }

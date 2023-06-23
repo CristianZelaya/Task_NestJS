@@ -1,151 +1,177 @@
 import { Injectable } from '@nestjs/common';
-import { Task, TaskStatus } from './tasks.entity';
+//import { Task, TaskStatus } from './tasks.entity';
 import { v4 } from 'uuid'
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Task, TaskDocument } from './schema/task.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class TasksService {
 
-    private tasks: Task[] = [{
-        id: '1',
-        title: 'first task',
-        description: 'some task',
-        statusTask: TaskStatus.PENDING,
-        status: true
-    }]
+    constructor(@InjectModel(Task.name) private taskModule:Model<TaskDocument>){
+
+    }
+
+    // private tasks: Task[] = [{
+    //     id: '1',
+    //     title: 'first task',
+    //     description: 'some task',
+    //     statusTask: TaskStatus.PENDING,
+    //     status: true
+    // }]
 
     getAllTasks() {
 
-        let response = {}
+        const tasks = this.taskModule.find()
+        return tasks
 
-        if (this.tasks.length >= 1 ) {
+        // let response = {}
 
-            let total = this.tasks.length
-            let tasks = this.tasks
+        // if (this.tasks.length >= 1 ) {
 
-            response = {
-                total,
-                tasks               
-            }
+        //     let total = this.tasks.length
+        //     let tasks = this.tasks
+
+        //     response = {
+        //         total,
+        //         tasks               
+        //     }
             
-        } else {
+        // } else {
 
-            response = {
+        //     response = {
 
-                msg: 'No hay tareas'
+        //         msg: 'No hay tareas'
 
-            }
+        //     }
 
-        }
+        // }
 
-        return response
+        // return response
         
     }
 
     getTaskById(id:string) {
 
-        const task = this.tasks.find( task => task.id === id && task.status === true )
+        const task = this.taskModule.findById({_id: id})
 
-        let response = {
-            msg: "",
-            task: {},
-            cod: 400
-        }
+        return task
 
-        if ( task ){
+        // const task = this.tasks.find( task => task.id === id && task.status === true )
 
-            response = {
-                msg: `Se encontro la tarea con el id ${id}`,
-                task,
-                cod: 200
-            }
+        // let response = {
+        //     msg: "",
+        //     task: {},
+        //     cod: 400
+        // }
+
+        // if ( task ){
+
+        //     response = {
+        //         msg: `Se encontro la tarea con el id ${id}`,
+        //         task,
+        //         cod: 200
+        //     }
             
-        } else {
+        // } else {
 
-            response = {
-                msg: `No hay tareas con el id ${id}`,
-                task: {},
-                cod: 400
-            }
+        //     response = {
+        //         msg: `No hay tareas con el id ${id}`,
+        //         task: {},
+        //         cod: 400
+        //     }
 
-        }
+        // }
 
-        return response
+        // return response
 
     }
 
     createTask(newTask:CreateTaskDto) {
 
-        const task = {
-            id: v4(),
-            title: newTask.title,
-            description: newTask.description,
-            statusTask: TaskStatus.PENDING,
-            status: true
-        }
+        const task = this.taskModule.create(newTask)
 
-        this.tasks.push(task);
+        return task
 
-        let response = {
-            msg: 'Se creo correctamente',
-            task
-        }
+        // const task = {
+        //     id: v4(),
+        //     title: newTask.title,
+        //     description: newTask.description,
+        //     statusTask: TaskStatus.PENDING,
+        //     status: true
+        // }
 
-        return response;
+        // this.tasks.push(task);
+
+        // let response = {
+        //     msg: 'Se creo correctamente',
+        //     task
+        // }
+
+        // return response;
 
     }
 
-    updateTask(id:string, updateFields:UpdateTaskDto):Task {
+    updateTask(id:string, updateFields:UpdateTaskDto) {
 
-        updateFields
-        const task = this.getTaskById(id)
-        let response = {}
+        const { title, description, statusTask} = updateFields
 
-        if ( task && task.cod == 200 ) {
+        const task = this.taskModule.findByIdAndUpdate({_id: id}, {title, description, statusTask}, {new: true})
+        return task
 
-            const update = Object.assign(task.task, updateFields)
-            this.tasks = this.tasks.map((task) => (task.id === id ? update : task) as Task )
+        // updateFields
+        // const task = this.getTaskById(id)
+        // let response = {}
 
-            response = {
-                msg: 'Se actualizo correctamente',
-                task: update
-            }
+        // if ( task && task.cod == 200 ) {
 
-        } else {
+        //     const update = Object.assign(task.task, updateFields)
+        //     this.tasks = this.tasks.map((task) => (task.id === id ? update : task) as Task )
 
-            response = {
-                msg: `No se encontro tarea con el id ${id}`
-            }
+        //     response = {
+        //         msg: 'Se actualizo correctamente',
+        //         task: update
+        //     }
 
-        }
+        // } else {
 
-        return response as Task
+        //     response = {
+        //         msg: `No se encontro tarea con el id ${id}`
+        //     }
+
+        // }
+
+        // return response as Task
 
     }
 
     deleteTask(id:string) {
+
+        const task = this.taskModule.findByIdAndUpdate({_id: id}, {status: false}, {new: true})
+        return task;
         
-        let task = this.tasks.filter( task => task.id === id && task.status === true)
-        let response = {}
+    //     let task = this.tasks.filter( task => task.id === id && task.status === true)
+    //     let response = {}
 
-        if ( task.length == 1 ) {
+    //     if ( task.length == 1 ) {
 
-            task[0].status = false
+    //         task[0].status = false
 
-            response = {
-                msg: 'Se elimino correctamente',
-                task
-            }
+    //         response = {
+    //             msg: 'Se elimino correctamente',
+    //             task
+    //         }
 
-        } else {
+    //     } else {
 
-            response = { 
-                msg: `No se encontro tarea con el id: ${id}`
-            }
+    //         response = { 
+    //             msg: `No se encontro tarea con el id: ${id}`
+    //         }
 
-        }
+    //     }
 
-        return response
+    //     return response
     }
     
 }
