@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 //import { Task, TaskStatus } from './tasks.entity';
 import { v4 } from 'uuid'
-import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
+import { CreateTaskDto, IdDto, UpdateTaskDto } from './dto/task.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Task, TaskDocument } from './schema/task.schema';
 import { Model } from 'mongoose';
@@ -52,9 +52,17 @@ export class TasksService {
         
     }
 
-    getTaskById(id:string) {
+    getTaskById(requestId:IdDto) {
 
-        const task = this.taskModule.findById({_id: id})
+        const task = this.taskModule.findById({_id: requestId.id, status: true})
+
+        if (!task) {
+
+            return {
+                msg: "No hay datos con este id"
+            }
+
+        }
 
         return task
 
@@ -113,11 +121,21 @@ export class TasksService {
 
     }
 
-    updateTask(id:string, updateFields:UpdateTaskDto) {
+    async updateTask(requestId:IdDto, updateFields:UpdateTaskDto) {
 
         const { title, description, statusTask} = updateFields
 
-        const task = this.taskModule.findByIdAndUpdate({_id: id}, {title, description, statusTask}, {new: true})
+        const task = await this.taskModule.findById({_id: requestId.id})
+
+        if ( !task.status || task ){
+
+            return {
+                msg: "La tarea no existe o ha sido eliminada"
+            }
+
+        }
+
+        await this.taskModule.findByIdAndUpdate({_id: requestId.id, status: true}, {title, description, statusTask}, {new: true})
         return task
 
         // updateFields
@@ -146,9 +164,9 @@ export class TasksService {
 
     }
 
-    deleteTask(id:string) {
+    deleteTask(requestId:IdDto) {
 
-        const task = this.taskModule.findByIdAndUpdate({_id: id}, {status: false}, {new: true})
+        const task = this.taskModule.findByIdAndUpdate({_id: requestId.id, status: true}, {status: false}, {new: true})
         return task;
         
     //     let task = this.tasks.filter( task => task.id === id && task.status === true)

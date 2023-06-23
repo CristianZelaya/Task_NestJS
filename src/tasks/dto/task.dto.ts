@@ -1,5 +1,12 @@
 import { TaskStatus  } from "../tasks.entity"
-import { IsNotEmpty, IsString, MinLength, IsOptional, IsIn} from "class-validator"
+import { IsNotEmpty, IsString, MinLength, IsOptional, IsIn, IsMongoId} from "class-validator"
+
+export class IdDto{
+    @IsMongoId()
+    @IsNotEmpty()
+    @IsString()
+    id: string
+}
 
 export class CreateTaskDto{
 
