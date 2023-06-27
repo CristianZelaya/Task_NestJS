@@ -16,7 +16,7 @@ export class TasksController {
     }
 
     @Get(':id')
-    getTaskById(@Param()  requestId:IdDto){
+    getTaskById(@Param() requestId:IdDto){
     
         return this.tasksService.getTaskById(requestId);
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 //import { Task, TaskStatus } from './tasks.entity';
 import { v4 } from 'uuid'
 import { CreateTaskDto, IdDto, UpdateTaskDto } from './dto/task.dto';
@@ -21,10 +21,19 @@ export class TasksService {
     //     status: true
     // }]
 
-    getAllTasks() {
+    async getAllTasks() {
 
-        const tasks = this.taskModule.find()
-        return tasks
+        try {
+            
+            const tasks = await this.taskModule.find()
+            return tasks
+            
+        } catch (error) {
+
+            throw new InternalServerErrorException(error)
+            
+        }
+
 
         // let response = {}
 
@@ -52,19 +61,25 @@ export class TasksService {
         
     }
 
-    getTaskById(requestId:IdDto) {
+    async getTaskById(requestId:IdDto) {
 
-        const task = this.taskModule.findById({_id: requestId.id, status: true})
+        try {
 
-        if (!task) {
+            const task = await this.taskModule.findById({_id: requestId.id, status: true})
 
-            return {
-                msg: "No hay datos con este id"
+            if (!task) {
+
+                throw new NotFoundException(`Task with id ${requestId.id} not found`)
+
             }
 
-        }
+            return task
+            
+        } catch (error) {
 
-        return task
+            throw new InternalServerErrorException(error)
+            
+        }
 
         // const task = this.tasks.find( task => task.id === id && task.status === true )
 
@@ -96,11 +111,20 @@ export class TasksService {
 
     }
 
-    createTask(newTask:CreateTaskDto) {
+    async createTask(newTask:CreateTaskDto) {
 
-        const task = this.taskModule.create(newTask)
+        try {
 
-        return task
+            const task = await this.taskModule.create(newTask)
+    
+            return task
+            
+        } catch (error) {
+
+            throw new InternalServerErrorException(error)
+            
+        }
+
 
         // const task = {
         //     id: v4(),
@@ -123,20 +147,27 @@ export class TasksService {
 
     async updateTask(requestId:IdDto, updateFields:UpdateTaskDto) {
 
-        const { title, description, statusTask} = updateFields
-
-        const task = await this.taskModule.findById({_id: requestId.id})
-
-        if ( !task.status || task ){
-
-            return {
-                msg: "La tarea no existe o ha sido eliminada"
+        try {
+            
+            const { title, description, statusTask} = updateFields
+    
+            const task = await this.taskModule.findByIdAndUpdate({_id: requestId.id, status: true}, {title, description, statusTask}, {new: true})
+    
+            if (!task || !task.status){
+    
+                throw new NotFoundException(`Task with id ${requestId.id} not found`)
+    
             }
+    
+            //const update = await this.taskModule.findByIdAndUpdate({_id: requestId.id, status: true}, {title, description, statusTask}, {new: true})
+            return task
 
+        } catch (error) {
+
+            throw new InternalServerErrorException(error)
+            
         }
 
-        await this.taskModule.findByIdAndUpdate({_id: requestId.id, status: true}, {title, description, statusTask}, {new: true})
-        return task
 
         // updateFields
         // const task = this.getTaskById(id)
@@ -164,10 +195,26 @@ export class TasksService {
 
     }
 
-    deleteTask(requestId:IdDto) {
+    async deleteTask(requestId:IdDto) {
 
-        const task = this.taskModule.findByIdAndUpdate({_id: requestId.id, status: true}, {status: false}, {new: true})
-        return task;
+        try {
+            
+            const task = await this.taskModule.findByIdAndUpdate({_id: requestId.id, status: true}, {status: false}, {new: true})
+
+            if ( !task || !task.status ){
+
+                throw new NotFoundException(`Task with id ${requestId.id} not found`)
+
+            }
+            
+            return task;
+
+        } catch (error) {
+
+            throw new InternalServerErrorException(error)
+            
+        }
+
         
     //     let task = this.tasks.filter( task => task.id === id && task.status === true)
     //     let response = {}

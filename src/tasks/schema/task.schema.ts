@@ -9,8 +9,8 @@ export enum TaskStatus {
 
 export type TaskDocument = Task & Document;
 
-@Schema()
-export class Task {
+@Schema({timestamps: true})
+export class Task{
     
   @Prop({ required: true })
   title: string;
