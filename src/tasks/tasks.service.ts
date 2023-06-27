@@ -5,6 +5,7 @@ import { CreateTaskDto, IdDto, UpdateTaskDto } from './dto/task.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Task, TaskDocument } from './schema/task.schema';
 import { Model } from 'mongoose';
+import e from 'express';
 
 @Injectable()
 export class TasksService {
@@ -27,8 +28,10 @@ export class TasksService {
             
             const tasks = await this.taskModule.find()
             return tasks
-            
+
         } catch (error) {
+
+            if( error.status != 500 ) throw error
 
             throw new InternalServerErrorException(error)
             
@@ -77,6 +80,8 @@ export class TasksService {
             
         } catch (error) {
 
+            if( error.status != 500 ) throw error
+
             throw new InternalServerErrorException(error)
             
         }
@@ -121,6 +126,8 @@ export class TasksService {
             
         } catch (error) {
 
+            if( error.status != 500 ) throw error
+
             throw new InternalServerErrorException(error)
             
         }
@@ -163,6 +170,8 @@ export class TasksService {
             return task
 
         } catch (error) {
+
+            if( error.status != 500 ) throw error
 
             throw new InternalServerErrorException(error)
             
@@ -210,6 +219,8 @@ export class TasksService {
             return task;
 
         } catch (error) {
+
+            if( error.status != 500 ) throw error
 
             throw new InternalServerErrorException(error)
             
